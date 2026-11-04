@@ -155,3 +155,30 @@ You must understand every line you submit. We check this with your video and in 
 5. Paste the repository link and the video link in the application form.
 
 We will run `pnpm install && pnpm check && pnpm typecheck && pnpm test` on your repository.
+
+## Decisions
+
+1. **Whole cents, and a fair split.** All money is an integer number of cents,
+   so there are no rounding errors like `0.1 + 0.2`. A bill is split with
+   `floor(total / count)` and the leftover cents go one each to the first
+   members, in the order they were added. The shares always add up to the total.
+
+2. **Pay with one atomic UPDATE.** Paying runs
+   `UPDATE shares SET paid_at = ... WHERE id = ? AND paid_at IS NULL`.
+   If two requests pay the same share at the same time, only one UPDATE can
+   change the row. The other changes 0 rows. If its Idempotency-Key matches the
+   stored key, it gets the same 200 answer. If the key is different, it gets
+   409. This is safer than reading first and writing after, because another
+   request can slip in between a read and a write.
+
+3. **Rules live in the database too.** The API checks the input, and the
+   schema has named constraints as a second layer: foreign keys, CHECKs for
+   positive money and non-blank names, a UNIQUE (bill, member) so a member
+   cannot get two shares of one bill, and a CHECK that `paid_at` and
+   `payment_key` are set together. Bad data is blocked even if the API has a bug.
+
+## AI use
+
+I used Claude (Anthropic) to help draft the API, the SQL migration, the extra
+tests and the web page. I ran and tested everything myself and I can explain
+every part.
