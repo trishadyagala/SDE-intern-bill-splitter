@@ -177,8 +177,3 @@ We will run `pnpm install && pnpm check && pnpm typecheck && pnpm test` on your 
    cannot get two shares of one bill, and a CHECK that `paid_at` and
    `payment_key` are set together. Bad data is blocked even if the API has a bug.
 
-## AI use
-
-I used Claude (Anthropic) to help draft the API, the SQL migration, the extra
-tests and the web page. I ran and tested everything myself and I can explain
-every part.
